@@ -1,48 +1,66 @@
-#include <Servo.h> 
+#include <Servo.h>
+#include "Ultrasonic.h"
 
 #define servoLeftPin 	  8
 #define servoRightPin 	9
-#define triggerPin      7
-#define echoPin         6
+#define TRIGGER_PIN     7
+#define ECHO_PIN        6
+
+Ultrasonic ultrasonic(TRIGGER_PIN, ECHO_PIN);
 
 Servo servoLeft;
 Servo servoRight;
 
 int stillSpeed = 91;
-int forwardSpeed = 180;
-int backwardSpeed = 0;
+int driveSpeed = 180;
+int speedModifier = 0;
+int range;
 
 void setup() 
 { 
   Serial.begin(9600);
   servoRight.attach(servoRightPin);
   servoLeft.attach(servoLeftPin);
-  pinMode(triggerPin, OUTPUT);
-  pinMode(echoPin, INPUT);
-
 } 
 
-void loop() {
+void loop() 
+{
   forward();
-  delay(1000);
-  backward();
-  delay(1000);
-} 
-
-void still()
-{
-	servoRight.write(stillSpeed);
-	servoLeft.write(stillSpeed);
-}
-
-void backward()
-{
-	servoRight.write(forwardSpeed);
-	servoLeft.write(180 - forwardSpeed);
+  range = ultrasonic.timing();
+  Serial.println(range);
+  if (range < 400)
+  {
+    reverse();
+    delay(1000);
+    turnRight();
+    delay(200);
+  }
 }
 
 void forward()
 {
-	servoRight.write(backwardSpeed);
-	servoLeft.write(180 - backwardSpeed);
+  servoRight.write(0 + speedModifier);
+  servoLeft.write(180 - speedModifier);
+  Serial.println("forward");
+}
+
+void reverse()
+{
+  servoRight.write(180 - speedModifier);
+  servoLeft.write(0 + speedModifier);
+  Serial.println("reverse");
+}
+
+void turnLeft()
+{
+  servoRight.write(180);
+  servoLeft.write(180);  
+  Serial.println("left");
+}
+
+void turnRight()
+{
+  servoRight.write(0);
+  servoLeft.write(0);  
+  Serial.println("right");
 }
